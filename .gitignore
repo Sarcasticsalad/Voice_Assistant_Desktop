@@ -1,4 +1,4 @@
-venv/
+.venv/
 raw_data/*
 raw_data/raw_audio_m4a/*
 !raw_data/raw_audio_m4a/test.m4a
