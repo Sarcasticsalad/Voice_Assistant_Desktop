@@ -1,16 +1,4 @@
 .venv/
-raw_data/*
-raw_data/raw_audio_m4a/*
-!raw_data/raw_audio_m4a/test.m4a
-raw_data/raw_transcript/*
-!raw_data/raw_transcript/test.txt
-raw_data/raw_audio_wav/*
-!raw_data/raw_audio_wav/test.wav
-raw_data/raw_audio_16k/*
-!raw_data/raw_audio_16k/test.wav
-!raw_data/raw_audio_16k/test.txt
-raw_data/textgrid/*
-!raw_data/textgrid/test.TextGrid
 Project Docs
 test.py
 align_audio_transcript.py
