@@ -5,13 +5,6 @@ align_audio_transcript.py
 Samrajya_Audio
 sound_clips
 Bidhi_Audio
-data/*
-data/aligned_audio/*
-data/aligned_transcript/*
-data/metadata/*
-!data/metadata/aligned_data.csv
-!data/aligned_audio/aligned_test.wav
-!data/aligned_transcript/aligned_test.txt
 data_preparation/*
 !data_preparation/std_audio_name.py
 !data_preparation/sampling_rate.py
