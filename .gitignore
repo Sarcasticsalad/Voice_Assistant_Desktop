@@ -14,11 +14,10 @@ data_preparation/*
 !data_preparation/generate_index_transcript.py
 !data_preparation/generate_dataset.py
 !data_preparation/extract_aligned_data.py
-models
 virtual_assistant_Luna/train_v2.ipynb
 virtual_assistant_Luna/train.ipynb
 hugging_face
-
+models/
 
 
 
