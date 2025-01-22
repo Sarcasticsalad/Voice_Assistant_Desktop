@@ -22,6 +22,11 @@ from threading import Thread
 from yt_dlp import YoutubeDL
 import threading
 import requests
+from pycaw.pycaw import AudioUtilities, IAudioEndpointVolume
+from comtypes import CLSCTX_ALL
+import screen_brightness_control as sbc
+import smtplib
+from email.message import EmailMessage
 
 engine = pyttsx3.init()
 voices = engine.getProperty('voices')
@@ -86,7 +91,7 @@ def wake_word(wake_words):
 # Function to Listen for commands
 def listen_command():
     try:
-        transcription = listen_audio(timeout=60, pharse_time_limit=60)
+        transcription = listen_audio(timeout=120, pharse_time_limit=60)
         print(f"Command received: {transcription}")
         return transcription
     
@@ -100,8 +105,9 @@ def normalize_command(input_command):
 
     for command, details in mv.COMMAND_REGISTRY.items():
         # Check if the input matches any alias for the command
-        if input_command in details['aliases']:
-            return command
+        for alias in details['aliases']:
+            if re.fullmatch(alias, input_command):
+                return command
 
         # get closest matches:
         closest_match = get_close_matches(input_command, details['aliases'], n=1, cutoff=0.6)
@@ -156,6 +162,9 @@ def get_time():
             current_time = f"{hour}:{minute_str} AM"
     
     return current_time 
+
+def word_to_number(word):
+    return mv.WORD_TO_NUMBER.get(word.lower(), None)
 
 def find_program_dynamically(program_name):
     # Try to locate the program in the PATH using 'where
@@ -355,6 +364,7 @@ def terminate_process(pid):
 
 def switch_tab():
     try:
+
         # Using Alt+Tab to switch between windows
         pyautogui.hotkey('alt', 'tab')
         time.sleep(0.5)  # Optional delay to ensure the window has switched
@@ -512,8 +522,17 @@ def google_search(query, browser="default"):
 
 def play_youtube_video_in_browser(video_title):
     try:
+
+        ydl_opts = {
+            "format": "best",
+            # Suppress console output
+            "quiet": True,  
+            # Ensure only a single video is processed
+            "noplaylist": True,  
+        }
+
         # Use yt-dlp to fetch the video URL
-        with YoutubeDL({"format": "best"}) as ydl:
+        with YoutubeDL(ydl_opts) as ydl:
             # Search for the video on YouTube
             results = ydl.extract_info(f"ytsearch:{video_title}", download=False)
             if "entries" in results and len(results["entries"]) > 0:
@@ -571,6 +590,234 @@ def get_weather(city=None):
     except Exception as e:
         return f"An error occurred while fetching the weather: {str(e)}"
 
+def create_new_document_in_application():
+    try:
+        pyautogui.hotkey('ctrl', 'n')  
+        speak("A new document has been created.")
+        time.sleep(0.5)
+    except Exception as e:
+        print(f"Error creating a new document: {e}")
+        speak("Failed to create a new document.")
+ 
+def write_in_application(content):
+    try:
+        time.sleep(0.5)  
+        pyautogui.write(content, interval=0.05) 
+        speak("The content has been written.")
+    except Exception as e:
+        print(f"Error writing content: {e}")
+        speak("Failed to write the content.") 
+
+def save_content():
+    try:
+        pyautogui.hotkey('ctrl', 's')
+        speak("The content has been saved.")
+    except Exception as e:
+        print(f"Error saving content: {e}")
+        speak("Failed to save the content.")
+
+def write_via_voice(ui):
+    try:
+        ui.update_status("Listening for content to write...")
+        speak("What would you like to write?")
+        content = listen_command()
+
+        if content:
+            print(f"Writing: {content}")
+            write_in_application(content)
+        else:
+            speak("I didn't catch that. Please try again.")
+    except Exception as e:
+        print(f"Error during voice-based writing: {e}")
+        speak("Failed to process your request for writing.")    
+
+def send_whatsapp_message(contact, message):
+    try:
+        open_uwp_app_dynamically("whatsapp")
+        time.sleep(1)
+
+        # Search for the contact
+        pyautogui.hotkey('ctrl', 'f')
+        time.sleep(1)
+        pyautogui.write(contact)
+        time.sleep(1)
+        pyautogui.press("enter")
+        time.sleep(1)
+
+        if message:
+            pyautogui.press('down')
+            pyautogui.press('enter')
+            pyautogui.write(message)
+            pyautogui.press('enter')
+            speak(f"Message sent to {contact}")
+
+        else:
+            speak("I couldn't hear the message. Please try again.")
+
+    except Exception as e:
+        print(f"Failed to send message: {e}")
+        speak("Something went wrong. Please try again.")           
+
+def adjust_volume(command):
+    try:
+        devices = AudioUtilities.GetSpeakers()
+        interface = devices.Activate(IAudioEndpointVolume._iid_, CLSCTX_ALL, None)
+        volume = interface.QueryInterface(IAudioEndpointVolume)
+
+        # Get current volume level (scalar value between 0.0 and 1.0)
+        current_volume = volume.GetMasterVolumeLevelScalar()
+        print(f"Current volume level: {current_volume * 100:.1f}%")
+
+        # Split command into words and look for a number word
+        words = command.split()
+        percentage = None
+        for word in words:
+            percentage = word_to_number(word)
+            if percentage is not None:
+                break
+
+        if percentage is None:
+            speak("By how much should I adjust the volume?")
+            response = listen_audio(timeout=5, pharse_time_limit=3)  # Listen for the percentage
+            print(f"Received follow-up command: {response}")
+            words = response.split()
+            for word in words:
+                percentage = word_to_number(word)
+                if percentage is not None:
+                    break
+
+        if percentage is not None:
+            # Convert to scalar (0.0 to 1.0)
+            scalar_change = percentage / 100.0
+
+            if "increase" in command:
+                new_volume = min(current_volume + scalar_change, 1.0)
+            elif "decrease" in command:
+                new_volume = max(current_volume - scalar_change, 0.0)
+
+            volume.SetMasterVolumeLevelScalar(new_volume, None)
+            print(f"New volume level: {new_volume * 100:.1f}%")
+            speak(f"Volume {'increased' if 'increase' in command else 'decreased'} by {percentage} percent.")
+        else:
+            speak("I couldn't understand the percentage. Please try again.")
+
+    except Exception as e:
+        print(f"Failed to adjust volume: {e}")
+        speak("Something went wrong while adjusting the volume.")
+
+
+def adjust_brightness(command):
+    try:
+        # Get the current brightness level (returns a list, take the first value)
+        current_brightness = sbc.get_brightness()[0]
+        print(f"Current brightness level: {current_brightness}%")
+
+        # Split command into words and look for a number word
+        words = command.split()
+        percentage = None
+        for word in words:
+            percentage = word_to_number(word)
+            if percentage is not None:
+                break
+
+        if percentage is None:
+            speak("By how much should I adjust the brightness?")
+            response = listen_audio(timeout=5, pharse_time_limit=3)
+            print(f"Received follow-up command: {response}")
+            words = response.split()
+            for word in words:
+                percentage = word_to_number(word)
+                if percentage is not None:
+                    break
+
+        if percentage is not None:
+            if "increase" in command:
+                new_brightness = min(current_brightness + percentage, 100)
+            elif "decrease" in command:
+                new_brightness = max(current_brightness - percentage, 0)
+
+            sbc.set_brightness(new_brightness)
+            print(f"New brightness level: {new_brightness}%")
+            speak(f"Brightness {'increased' if 'increase' in command else 'decreased'} by {percentage} percent.")
+        else:
+            speak("I couldn't understand the percentage. Please try again.")
+
+    except Exception as e:
+        print(f"Failed to adjust brightness: {e}")
+        speak("Something went wrong while adjusting the brightness.")
+
+def mute_audio(command):
+    try:
+        devices = AudioUtilities.GetSpeakers()
+        interface = devices.Activate(IAudioEndpointVolume._iid_, CLSCTX_ALL, None)
+        volume = interface.QueryInterface(IAudioEndpointVolume)
+
+        # Get current mute state (True if muted, False if unmuted)
+        is_muted = volume.GetMute()
+
+        if "mute" in command and not is_muted:
+            # Mute the audio if it's not already muted
+            volume.SetMute(True, None)
+            speak("Audio is now muted.")
+        elif "unmute" in command and is_muted:
+            # Unmute the audio if it's currently muted
+            volume.SetMute(False, None)
+            speak("Audio is now unmuted.")
+        else:
+            # If the command is not clear or volume is already in desired state
+            speak("The audio is already in the desired state.")
+
+    except Exception as e:
+        print(f"Failed to mute/unmute audio: {e}")
+        speak("Something went wrong while muting or unmuting the audio.")    
+
+
+def send_email():
+    try:
+        # Ask for recipient name
+        speak("Who do you want to send the email to?")
+        recipient_name = listen_audio(timeout=30, phrase_time_limit=10).lower().strip()
+
+        # Check if the name exists in the email contacts
+        if recipient_name in mv.EMAIL_CONTACTS:
+            recipient_email = mv.EMAIL_CONTACTS[recipient_name]
+        else:
+            speak(f"I don't have an email for {recipient_name}. Please try again.")
+            return
+
+        # Ask for the subject
+        speak("What is the subject of the email?")
+        subject = listen_audio(timeout=30, phrase_time_limit=10)
+        if not subject:
+            speak("I didn't catch the subject. Please try again.")
+            return
+
+        # Ask for the body of the email
+        speak("What would you like to say in the email?")
+        body = listen_audio(timeout=60, phrase_time_limit=20)
+        if not body:
+            speak("I didn't catch the message. Please try again.")
+            return
+
+        # Compose the email
+        email = EmailMessage()
+        email['From'] = 'your_email@example.com'  # Replace with your email
+        email['To'] = recipient_email
+        email['Subject'] = subject
+        email.set_content(body)
+
+        # Send the email using SMTP
+        with smtplib.SMTP_SSL('smtp.your_email_provider.com', 465) as server:
+            server.login('your_email@example.com', 'your_password')  # Replace with your credentials
+            server.send_message(email)
+        
+        speak(f"Email sent to {recipient_name}.")
+    
+    except Exception as e:
+        print(f"Failed to send email: {e}")
+        speak("Something went wrong while sending the email. Please try again.")
+
+
 
 
 def process_commands(ui):
@@ -603,12 +850,17 @@ def process_commands(ui):
                         ui.update_response(response)
                         speak(response)
 
-                    elif "what's the time" in command or "what time is it" in command or "can you tell me the time" in command:
+                    # elif "what's the time" in command or "what time is it" in command or "can you tell me the time" in command:
+                    #     response = f"It's {get_time()}"
+                    #     ui.update_response(response)
+                    #     speak(response)
+
+                    elif norm_command == "what's the time":
                         response = f"It's {get_time()}"
                         ui.update_response(response)
                         speak(response)
 
-                    elif "tell me a joke" in command or "can you tell me a joke" in command or "tell me another joke" in command:
+                    elif norm_command == "tell me a joke":
                         response = get_joke()
                         ui.update_response(response)
                         speak(response)
@@ -694,8 +946,47 @@ def process_commands(ui):
 
                         weather_info = get_weather(city)
                         ui.update_response(weather_info)
-                        speak(weather_info)                            
+                        speak(weather_info)   
 
+                    elif norm_command == "write":
+                        # Function to write
+                        write_via_voice(ui)
+
+                    elif norm_command == "create a new":
+                        create_new_document_in_application()
+
+                    elif norm_command == "save":
+                        save_content()        
+
+                    elif "send a message on whatsapp" in norm_command:
+                        speak("Who do you want to message?")
+                        contact = listen_audio(timeout=60, pharse_time_limit=10)
+
+                        if contact:
+                            speak("What would you like to say?")
+                            message = listen_audio(timeout=60, pharse_time_limit=60)
+
+                            if message:
+                                send_whatsapp_message(contact, message)
+
+                            else:
+                                speak("I couldn't hear the message. Please try again.")    
+
+                        else:
+                            speak("I couldn't get the contact name. Please try again")     
+
+                    elif "mute audio" in norm_command:
+                        mute_audio(norm_command)
+
+                    elif "unmute audio" in norm_command:
+                        mute_audio(norm_command)
+
+                    elif "increase the volume" in norm_command or "decrease the volume" in norm_command:
+                        adjust_volume(norm_command)    
+
+                    elif "increase brightness" in norm_command or "decrease brightness" in norm_command:
+                        adjust_brightness(norm_command)
+             
 
                 else:
                     speak("let's try again")
