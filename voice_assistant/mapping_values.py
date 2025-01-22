@@ -45,6 +45,38 @@ COMMAND_REGISTRY = {
         "aliases": ["tell me a joke", "say something funny", "make me laugh"],
         "handler": "handle_joke_command",
     },
+
+    "write" : {
+        "aliases": ["right", "wright"],
+        "handler": "handle_write_command",
+
+    },
+
+    "create a new": {
+        "aliases": ["create a new"],
+        "handler": "handle_create_command",
+    },
+
+    "save" : {
+        "aliases": ["seeve", "se you", "deeve", "seve"],
+        "handler": "handle_write_command",
+    },
+
+    "play on youtube": {
+    "aliases": ["play on youtube", "play on you", "play on you tube",],
+    "handler": "handle_play_youtube_command",
+    },
+
+    "send a message on whatsapp": {
+        "aliases": ["send a message on whatsapp", "send a message on what's ap",
+                     "send a message on what's up", "send a message on what sap"],
+        "handler": "handle_send_message_command",
+    },
+
+    "google": {
+        "aliases": ["google", "gooble", "go gong", "gugle"],
+        "handler": "handle_google_search",
+    },
 }
 
 
@@ -52,16 +84,17 @@ PROGRAM_ALIAS = {
     "whatsapp": ["whatsapp", "what's ap", "what's up", "whatsap", "what's ap", "what's ep", "whatsep", "what sap", "what sab",],
     "notepad": ["notepad", "note pad", "note-pad", "node pad", "not pad"],
     "discord": ["this cord", "discord", "dist cord", "dis chord", "this chord", "disk cord", "disk chord", "dis cord", "this corde"],
-    "word": ["word", "ward"],
+    "word": ["word", "ward", "the word"],
     "excel": ["the excell", "excell" "axle", "exel", "excl", "excel"],
     "powerpoint": ["power point", "the power point"],
     "calculator": ["calculater", "calcu leader", "calculator"],
-    "lenovo vantage": ["lanover vantage", "lenovo vantage", "lenoval vantage", "lanoval vantage"],
+    "lenovo vantage": ["lanover vantage", "lenovo vantage", "lenoval vantage", "lanoval vantage", "leng over vantage", "lengover vantage"],
     "nvidia": ["and videa", "and video", "an videa"],
     "sticky notes": ["notes", "sticky nodes", "sticky notes"],
-    "obsidian": [""],
+    "obsidian": ["ubsidian", "upsidiun", "upsilian", "upsidion"],
     "viber": ["viber", "fiber"],
-    "clock": ["clack", "clock"]
+    "clock": ["clack", "clock"],
+    
 }
 
 WORD_TO_NUMBER = {
@@ -78,7 +111,18 @@ WORD_TO_NUMBER = {
     "forty-five": 45, "forty-six": 46, "forty-seven": 47, "forty-eight": 48,
     "forty-nine": 49, "fifty": 50, "fifty-one": 51, "fifty-two": 52,
     "fifty-three": 53, "fifty-four": 54, "fifty-five": 55, "fifty-six": 56,
-    "fifty-seven": 57, "fifty-eight": 58, "fifty-nine": 59,
+    "fifty-seven": 57, "fifty-eight": 58, "fifty-nine": 59, "sixty": 60,
+    "sixty-one": 61, "sixty-two": 62, "sixty-three": 63, "sixty-four": 64,
+    "sixty-five": 65, "sixty-six": 66, "sixty-seven": 67, "sixty-eight": 68,
+    "sixty-nine": 69, "seventy": 70, "seventy-one": 71, "seventy-two": 72,
+    "seventy-three": 73, "seventy-four": 74, "seventy-five": 75,
+    "seventy-six": 76, "seventy-seven": 77, "seventy-eight": 78,
+    "seventy-nine": 79, "eighty": 80, "eighty-one": 81, "eighty-two": 82,
+    "eighty-three": 83, "eighty-four": 84, "eighty-five": 85, "eighty-six": 86,
+    "eighty-seven": 87, "eighty-eight": 88, "eighty-nine": 89, "ninety": 90,
+    "ninety-one": 91, "ninety-two": 92, "ninety-three": 93, "ninety-four": 94,
+    "ninety-five": 95, "ninety-six": 96, "ninety-seven": 97, "ninety-eight": 98,
+    "ninety-nine": 99, "hundred": 100
 }
 
 MISRECOGNIZED_WORDS = {
@@ -107,12 +151,6 @@ URL_MISPRONUNCIATIONS = {
     " dot edu dot np": ".edu.np"
 }
 
-# BROWSERS = {
-#     "chrome": "C:\Program Files\Google\Chrome\Application\chrome.exe %s",
-#     "edge": "C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe %s",
-#     "default":"",
-# }
-
 BROWSERS = {
    "chrome": "chrome",
    "edge": "msedge",
@@ -120,6 +158,10 @@ BROWSERS = {
    "default": "arc", 
 }
 
-TASKS = {
-    "tasks" : ["what's the time", "tell me a joke", "open excel", "close whatsapp", "google books", "set an alarm for 7:30 am"]
+# TASKS = {
+#     "tasks" : ["what's the time", "tell me a joke", "open excel", "close whatsapp", "google books", "set an alarm for 7:30 am"]
+# }
+
+EMAIL_CONTACTS = {
+    "bidhi": "bidhiraghubanshi28@gmail.com",
 }
