@@ -27,6 +27,7 @@ from comtypes import CLSCTX_ALL
 import screen_brightness_control as sbc
 import smtplib
 from email.message import EmailMessage
+import soundfile as sf
 
 engine = pyttsx3.init()
 voices = engine.getProperty('voices')
@@ -45,16 +46,38 @@ def speak(audio):
     print(audio)
     engine.runAndWait()
 
+# # Input Pipeline Function
+# def input_pipeline(audio_data):
+#     # Load audio from bytes with torchaudio
+#     waveform, sample_rate = torchaudio.load(io.BytesIO(audio_data), format="wav")
+
+#     # Resampling as our devices take audio at 48khz
+#     if sample_rate != 16000:
+#         waveform = torchaudio.transforms.Resample(orig_freq=sample_rate, new_freq=16000)(waveform)
+
+#     # Process and trasncribe with Wav2vec2
+#     input_values = processor(waveform.squeeze(), sampling_rate=16000, return_tensors="pt").input_values
+#     logits = model(input_values).logits
+#     predicted_ids = torch.argmax(logits, dim=-1)
+#     transcription = processor.decode(predicted_ids[0])
+
+#     return transcription
+
 # Input Pipeline Function
 def input_pipeline(audio_data):
-    # Load audio from bytes with torchaudio
-    waveform, sample_rate = torchaudio.load(io.BytesIO(audio_data), format="wav")
+    # Load audio from BytesIO using soundfile
+    audio_buffer = io.BytesIO(audio_data)
+    waveform, sample_rate = sf.read(audio_buffer, dtype="float32")
 
-    # Resampling as our devices take audio at 48khz
+    # Convert to PyTorch tensor
+    waveform = torch.tensor(waveform).unsqueeze(0)  # Add batch dimension
+
+    # Resample to 16kHz if needed
     if sample_rate != 16000:
-        waveform = torchaudio.transforms.Resample(orig_freq=sample_rate, new_freq=16000)(waveform)
+        resampler = torchaudio.transforms.Resample(orig_freq=sample_rate, new_freq=16000)
+        waveform = resampler(waveform)
 
-    # Process and trasncribe with Wav2vec2
+    # Process and transcribe with Wav2Vec2
     input_values = processor(waveform.squeeze(), sampling_rate=16000, return_tensors="pt").input_values
     logits = model(input_values).logits
     predicted_ids = torch.argmax(logits, dim=-1)
