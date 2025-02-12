@@ -26,6 +26,10 @@ https://drive.google.com/drive/folders/11BxClZPu7N1U29W-qtSu8MUFfl_7NEDA?usp=sha
 
 ```
 
+```sh
+# Inside the clone repository create a folder named models and paste the extracted zip folder sr_test_2 inside the models folder
+```
+
 #### 4. Run the Luna_v1.py file
 
 ```sh
