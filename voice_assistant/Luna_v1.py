@@ -34,8 +34,8 @@ voices = engine.getProperty('voices')
 engine.setProperty('voice', voices[1].id)
 
 # Initializing the model and processor
-processor = Wav2Vec2Processor.from_pretrained(r"E:\CSIT\7thsem\FYP\models\sr_test_2")
-model = Wav2Vec2ForCTC.from_pretrained(r"E:\CSIT\7thsem\FYP\models\sr_test_2")
+processor = Wav2Vec2Processor.from_pretrained("./models/sr_test_2")
+model = Wav2Vec2ForCTC.from_pretrained("./models/sr_test_2")
 
 # Global variable to track snooze activation
 snooze_activated = False
