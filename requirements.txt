@@ -46,4 +46,4 @@ transformers==4.48.2
 typing_extensions==4.12.2
 urllib3==2.3.0
 WMI==1.5.1
-yt-dlp==2025.1.26
+yt-dlp==2025.4.30

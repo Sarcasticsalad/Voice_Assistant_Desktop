@@ -158,9 +158,9 @@ BROWSERS = {
    "default": "arc", 
 }
 
-# TASKS = {
-#     "tasks" : ["what's the time", "tell me a joke", "open excel", "close whatsapp", "google books", "set an alarm for 7:30 am"]
-# }
+TASKS = {
+    "tasks" : ["what's the time", "tell me a joke", "open excel", "close whatsapp", "google books", "set an alarm for 7:30 am"]
+}
 
 EMAIL_CONTACTS = {
     "bidhi": "bidhiraghubanshi28@gmail.com",

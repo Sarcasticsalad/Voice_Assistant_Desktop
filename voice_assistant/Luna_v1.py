@@ -547,7 +547,7 @@ def play_youtube_video_in_browser(video_title):
     try:
 
         ydl_opts = {
-            "format": "best",
+            "format": "bestaudio/best",
             # Suppress console output
             "quiet": True,  
             # Ensure only a single video is processed
@@ -560,6 +560,8 @@ def play_youtube_video_in_browser(video_title):
             results = ydl.extract_info(f"ytsearch:{video_title}", download=False)
             if "entries" in results and len(results["entries"]) > 0:
                 video_url = results["entries"][0]["webpage_url"]
+                if not video_url:
+                    raise Exception("Unable to extract video URL.")
             else:
                 raise Exception("No results found for the video.")
         
